@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ponce Playa: Reporte de Inundaciones</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <!-- Leaflet Draw CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+
+    <!-- Google Fonts: PT Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+        rel="stylesheet">
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Decorative Map Frame -->
+    <div id="map-frame" class="map-frame"></div>
+
+    <!-- Full Screen Modal -->
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <img src="logo/logo_vida_costera.jpg" alt="Logo Vida Costera" class="modal-logo">
+            <h1>Herramienta de Reporte de Inundaciones</h1>
+            <p>Esta herramienta permite a los residentes de Ponce Playa marcar las áreas afectadas por inundaciones para
+                ayudar en la planificación comunitaria.</p>
+
+            <h3 style="margin-bottom: 5px; font-weight: 500; color: var(--text-secondary); text-align: left;">Tu Nombre
+            </h3>
+            <input type="text" id="user-name" placeholder="Escribe tu nombre completo" class="modal-input">
+
+            <h3 style="margin-bottom: 5px; font-weight: 500; color: var(--text-secondary); text-align: left;">Tu
+                Comunidad</h3>
+            <select id="sector-select">
+                <option value="" disabled selected>Elige un sector...</option>
+                <!-- Options will be populated by JS -->
+            </select>
+            <button id="start-btn" class="primary-btn pulse-animation">COMENZAR</button>
+        </div>
+    </div>
+
+    <!-- Map Container -->
+    <div id="map"></div>
+
+    <!-- UI Overlays -->
+    <div id="app-header">
+        <h2>Ponce Playa: Reporte de Inundaciones</h2>
+    </div>
+
+    <!-- Instruction Toast (Hidden initially) -->
+    <div id="instruction-toast" class="toast hidden">
+        <span class="toast-icon">💡</span>
+        <span id="toast-message">Toca el mapa para dibujar.</span>
+    </div>
+
+    <!-- Custom Drawing Toolbar (Hidden initially) -->
+    <div id="drawing-toolbar" class="toolbar hidden">
+        <button id="draw-btn" class="tool-btn report-btn">
+            <span class="icon">✏️</span> Marcar Área
+        </button>
+        <button id="delete-btn" class="tool-btn delete-btn">
+            <span class="icon">🗑️</span> Borrar Último
+        </button>
+    </div>
+
+    <!-- Submit Footer (Hidden initially) -->
+    <div id="submit-footer" class="footer hidden">
+        <button id="main-continue-btn" class="submit-btn" style="background: #007AFFAA;">CONTINUAR</button>
+    </div>
+
+    <!-- Details Modal (Hidden initially) -->
+    <div id="details-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 5px; font-weight: 500; color: var(--text-secondary); text-align: left;">
+                Comentarios (Opcional)</h3>
+            <textarea id="comments-input" class="modal-input" placeholder="Detalles sobre la inundación..." rows="3"
+                style="resize: none; height: auto;"></textarea>
+
+            <h3 style="margin-bottom: 5px; font-weight: 500; color: var(--text-secondary); text-align: left;">Contacto
+                (Opcional)</h3>
+            <input type="text" id="contact-input" placeholder="Email o Teléfono" class="modal-input">
+
+            <div style="display: flex; gap: 10px;">
+                <button id="cancel-details-btn" class="primary-btn"
+                    style="background: #E5E5EA; color: #000;">Volver</button>
+                <button id="final-submit-btn" class="primary-btn pulse-animation">ENVIAR REPORTE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Leaflet Draw JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+
+
+    <!-- Supabase JS -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+    <!-- App Logic -->
+    <script src="app.js"></script>
+</body>
+
+</html>
