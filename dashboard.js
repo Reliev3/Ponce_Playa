@@ -102,7 +102,6 @@ function renderDashboard(reports) {
     // 1. Update Scorecards
     document.getElementById('total-reports').innerText = reports.length;
 
-
     // 2. Update Map
     mapLayerGroup.clearLayers();
     reports.forEach(r => {
@@ -165,12 +164,9 @@ function renderDashboard(reports) {
         listContainer.appendChild(div);
     });
 
-    // 4. Render/Update Charts
-    renderChart(reports);       // Trend
+    // 4. Render/Update Chart
+    renderChart(reports);
 }
-
-// ... trend chart logic ...
-
 
 function renderChart(reports) {
     const ctx = document.getElementById('trend-chart');
@@ -229,7 +225,6 @@ function renderChart(reports) {
             }
         }
     });
-});
 }
 
 // Start
