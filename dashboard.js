@@ -32,7 +32,8 @@ mapLayerGroup.addTo(map);
 
 // 2. Load Boundary & Mask
 fetch('geojsons/Playa_Area.geojson').then(r => r.json()).then(data => {
-    // A. Add Orange Boundary
+    // A. Add Orange Boundary (Removed per user request)
+    /*
     L.geoJSON(data, {
         style: {
             color: '#FF9500',
@@ -42,6 +43,7 @@ fetch('geojsons/Playa_Area.geojson').then(r => r.json()).then(data => {
         },
         interactive: false
     }).addTo(map);
+    */
 
     // B. Add Inverted Focus Mask
     try {
