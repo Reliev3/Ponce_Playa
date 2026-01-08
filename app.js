@@ -438,10 +438,11 @@ function lockAppToSector(sectorName) {
     // Map Updates
     if (currentSectorLayer) mapInstance.removeLayer(currentSectorLayer);
 
+    // 1. Add Orange Boundary Layer
     const playaLayer = L.geoJSON(PLAYA_AREA_JSON, {
         style: {
             color: '#FF9500', // Orange
-            weight: 6,
+            weight: 3,        // Thinner stroke
             fill: false
         }
     }).addTo(mapInstance);
@@ -449,6 +450,37 @@ function lockAppToSector(sectorName) {
     currentSectorLayer = playaLayer;
     mapInstance.fitBounds(playaLayer.getBounds(), { padding: [20, 20] });
     window.currSectorName = sectorName;
+
+    // 2. Add Focus Mask (Dim outside area)
+    try {
+        if (typeof turf !== 'undefined') {
+            const worldMask = turf.polygon([[
+                [-180, -90],
+                [180, -90],
+                [180, 90],
+                [-180, 90],
+                [-180, -90]
+            ]]);
+
+            // Get the first polygon from the feature collection
+            const boundaryFeature = PLAYA_AREA_JSON.features[0];
+
+            // Calculate difference (World - Boundary)
+            const maskPoly = turf.mask(boundaryFeature, worldMask);
+
+            L.geoJSON(maskPoly, {
+                style: {
+                    color: 'transparent',
+                    fillColor: '#000000',
+                    fillOpacity: 0.6,
+                    weight: 0,
+                    interactive: false // Allow clicking through to map if needed, or block? usually better to block to focus.
+                }
+            }).addTo(mapInstance);
+        }
+    } catch (e) {
+        console.error("Error creating mask:", e);
+    }
 }
 
 async function submitReport() {
