@@ -45,7 +45,7 @@ body {
     z-index: 5000;
     pointer-events: none;
     border: 24px solid #007AFF;
-    /* border-image: url('patterns/drops.jpg') 30 round; */
+    border-image: none;
     opacity: 1.0;
 }
 
