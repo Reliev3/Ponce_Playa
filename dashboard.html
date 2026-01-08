@@ -11,44 +11,227 @@
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600;700&display=swap"
+        rel="stylesheet">
 
     <style>
+        :root {
+            --primary-blue: #00F3FF;
+            --bg-dark: #050a0d;
+            --panel-bg: rgba(0, 10, 15, 0.95);
+            --border-color: rgba(0, 243, 255, 0.3);
+        }
+
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Share Tech Mono', monospace;
-            background: #000;
-            overflow: hidden;
-        }
-
-        #map {
             height: 100vh;
             width: 100vw;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: #fff;
+            overflow: hidden;
+            display: flex;
+            /* Flexbox for Column Layout */
         }
 
-        .dashboard-header {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.85);
-            border: 1px solid #00F3FF;
-            color: #00F3FF;
-            padding: 10px 30px;
-            border-radius: 4px;
+        /* --- LEFT SIDEBAR (DATA) --- */
+        .sidebar {
+            width: 380px;
+            height: 100%;
+            background: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
             z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid var(--primary-blue);
+            object-fit: cover;
+        }
+
+        .app-title {
+            font-family: 'Share Tech Mono', monospace;
             font-size: 20px;
-            letter-spacing: 2px;
-            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
-            backdrop-filter: blur(5px);
+            color: var(--primary-blue);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .scorecards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(0, 243, 255, 0.05);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .card-value {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 28px;
+            color: var(--primary-blue);
+            font-weight: bold;
+        }
+
+        .card-label {
+            font-size: 11px;
+            color: #aaa;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        .filters {
+            padding: 0 20px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        select {
+            background: #000;
+            color: #fff;
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Inter', sans-serif;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+        }
+
+        .data-list-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .report-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .report-item:hover {
+            background: rgba(0, 243, 255, 0.1);
+        }
+
+        .report-sector {
+            color: var(--primary-blue);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .report-meta {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* --- RIGHT MAP --- */
+        #map {
+            flex-grow: 1;
+            height: 100%;
+        }
+
+        /* --- SCROLLBAR --- */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-blue);
+            border-radius: 3px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: 50vh;
+                order: 2;
+            }
+
+            #map {
+                height: 50vh;
+                order: 1;
+            }
         }
     </style>
 </head>
 
 <body>
 
-    <div class="dashboard-header">VIDA COSTERA // DASHBOARD</div>
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="logo/logo_vida_costera.jpg" alt="Logo" class="logo">
+            <div class="app-title">Vida Costera<br>Dashboard PO</div>
+        </div>
+
+        <!-- SCORECARDS -->
+        <div class="scorecards">
+            <div class="card">
+                <div id="total-reports" class="card-value">--</div>
+                <div class="card-label">Total Reportes</div>
+            </div>
+            <div class="card">
+                <div id="active-sectors" class="card-value">--</div>
+                <div class="card-label">Sectores Activos</div>
+            </div>
+        </div>
+
+        <!-- FILTERS -->
+        <div class="filters">
+            <select id="filter-sector">
+                <option value="all">Todos los Sectores</option>
+            </select>
+            <select id="filter-reporter">
+                <option value="all">Todos los Reportadores</option>
+            </select>
+        </div>
+
+        <!-- DATA LIST -->
+        <div id="report-list" class="data-list-container">
+            <!-- List items populated by JS -->
+            <div style="padding: 20px; text-align: center; color: #666;">Cargando datos...</div>
+        </div>
+    </div>
+
+    <!-- RIGHT MAP -->
     <div id="map"></div>
 
     <!-- Leaflet JS -->

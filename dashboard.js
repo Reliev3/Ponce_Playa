@@ -1,12 +1,15 @@
-// Dashboard Logic (Restored to Simple Version)
+// DASHBOARD LOGIC (2-COLUMN + FILTERS)
 
-// 1. Initialize Supabase
 const SUPABASE_URL = 'https://eduxsmumirjcyipuairt.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkdXhzbXVtaXJqY3lpcHVhaXJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NjQ0ODMsImV4cCI6MjA4MjM0MDQ4M30.NA7ht8yh9ZsrdYjipyQJh82dD186tMlp4aUBWogohg0';
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 2. Initialize Map (Satellite)
+// State
+let allReports = [];
+let mapLayerGroup = L.layerGroup();
+
+// 1. Initialize Map
 const map = L.map('map', { zoomControl: false }).setView([17.973, -66.614], 14);
 
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
@@ -14,57 +17,141 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/
     maxZoom: 19
 }).addTo(map);
 
-// 3. Load Boundary (Blue)
+mapLayerGroup.addTo(map);
+
+// 2. Load Boundary
 fetch('geojsons/Playa_Area.geojson').then(r => r.json()).then(data => {
     L.geoJSON(data, {
-        style: {
-            color: '#00F3FF', // Cyan
-            weight: 3,
-            fill: false,
-            dashArray: '10, 5'
-        },
+        style: { color: '#00F3FF', weight: 2, fill: false, dashArray: '5, 5', opacity: 0.6 },
         interactive: false
     }).addTo(map);
-}).catch(e => console.error("Boundary error:", e));
+}).catch(e => console.error(e));
 
-// 4. Fetch and Render Reports
-async function loadReports() {
-    console.log("Fetching reports...");
+// 3. Main Init
+async function initDashboard() {
+    // A. Fetch Data
     const { data, error } = await supabaseClient
         .from('flood_reports')
-        .select('*');
+        .select('*')
+        .order('created_at', { ascending: false });
 
     if (error) {
-        console.error("Error fetching reports:", error);
+        console.error("Error:", error);
+        alert("Error loading data");
         return;
     }
 
-    if (data && data.length > 0) {
-        data.forEach(report => {
-            if (report.geojson_data) {
-                L.geoJSON(report.geojson_data, {
-                    style: {
-                        color: '#00F3FF', // Cyan Polygons
-                        weight: 2,
-                        fillColor: '#00F3FF',
-                        fillOpacity: 0.5
-                    },
-                    onEachFeature: (feature, layer) => {
-                        const content = `
-                            <div style="font-family: sans-serif; padding: 5px;">
-                                <h3 style="margin: 0 0 5px 0; color: #007AFF;">${report.sector || 'Desconocido'}</h3>
-                                <p style="margin: 0 0 5px 0;"><b>Reportado por:</b> ${report.reporter_name || 'Anónimo'}</p>
-                                <p style="margin: 0 0 5px 0; font-size: 12px; color: #666;">${new Date(report.created_at).toLocaleString()}</p>
-                            </div>
-                        `;
-                        layer.bindPopup(content);
-                    }
-                }).addTo(map);
-            }
-        });
-        console.log(`Loaded ${data.length} reports.`);
-    }
+    allReports = data || [];
+
+    // B. Populate Filters
+    populateFilters();
+
+    // C. Initial Render
+    renderDashboard(allReports);
+
+    // D. Setup Event Listeners
+    document.getElementById('filter-sector').addEventListener('change', runFilters);
+    document.getElementById('filter-reporter').addEventListener('change', runFilters);
 }
 
-// Load on start
-loadReports();
+function populateFilters() {
+    const sectorSet = new Set();
+    const reporterSet = new Set();
+
+    allReports.forEach(r => {
+        if (r.sector) sectorSet.add(r.sector);
+        if (r.reporter_name) reporterSet.add(r.reporter_name);
+    });
+
+    const sectorSelect = document.getElementById('filter-sector');
+    const reporterSelect = document.getElementById('filter-reporter');
+
+    sectorSet.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s;
+        opt.innerText = s;
+        sectorSelect.appendChild(opt);
+    });
+
+    reporterSet.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r;
+        opt.innerText = r;
+        reporterSelect.appendChild(opt);
+    });
+}
+
+function runFilters() {
+    const sector = document.getElementById('filter-sector').value;
+    const reporter = document.getElementById('filter-reporter').value;
+
+    const filtered = allReports.filter(r => {
+        const matchSector = (sector === 'all') || (r.sector === sector);
+        const matchReporter = (reporter === 'all') || (r.reporter_name === reporter);
+        return matchSector && matchReporter;
+    });
+
+    renderDashboard(filtered);
+}
+
+function renderDashboard(reports) {
+    // 1. Update Scorecards
+    document.getElementById('total-reports').innerText = reports.length;
+    const uniqueSectors = new Set(reports.map(r => r.sector)).size;
+    document.getElementById('active-sectors').innerText = uniqueSectors;
+
+    // 2. Update Map
+    mapLayerGroup.clearLayers();
+    reports.forEach(r => {
+        if (r.geojson_data) {
+            const layer = L.geoJSON(r.geojson_data, {
+                style: {
+                    color: '#00F3FF',
+                    weight: 2,
+                    fillColor: '#00F3FF',
+                    fillOpacity: 0.4
+                }
+            });
+
+            // Popup
+            const date = new Date(r.created_at).toLocaleDateString();
+            const content = `
+                <div style="font-family:sans-serif; color:#333;">
+                    <b>${r.sector}</b><br>
+                    Reportado por: ${r.reporter_name}<br>
+                    <small>${date}</small>
+                </div>
+            `;
+            layer.bindPopup(content);
+            mapLayerGroup.addLayer(layer);
+        }
+    });
+
+    // 3. Update List
+    const listContainer = document.getElementById('report-list');
+    listContainer.innerHTML = "";
+
+    reports.forEach(r => {
+        const date = new Date(r.created_at).toLocaleString();
+        const div = document.createElement('div');
+        div.className = 'report-item';
+        div.innerHTML = `
+            <div class="report-sector">${r.sector || 'Desconocido'}</div>
+            <div class="report-meta">
+                <span>👤 ${r.reporter_name || 'Anónimo'}</span>
+                <span>${date}</span>
+            </div>
+        `;
+        // Click to zoom
+        div.onclick = () => {
+            if (r.geojson_data) {
+                const l = L.geoJSON(r.geojson_data);
+                map.fitBounds(l.getBounds(), { maxZoom: 18, padding: [50, 50] });
+            }
+        };
+        listContainer.appendChild(div);
+    });
+}
+
+// Start
+initDashboard();
