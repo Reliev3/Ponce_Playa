@@ -129,29 +129,65 @@
             border-top: 1px solid var(--border-color);
         }
 
-        .report-item {
-            padding: 15px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        /* --- FEED STYLE LIST --- */
+        .feed-item {
+            padding: 20px;
+            border-bottom: 1px solid rgba(0, 243, 255, 0.1);
             cursor: pointer;
             transition: background 0.2s;
+            position: relative;
         }
 
-        .report-item:hover {
-            background: rgba(0, 243, 255, 0.1);
+        .feed-item:hover {
+            background: rgba(0, 243, 255, 0.05);
         }
 
-        .report-sector {
-            color: var(--primary-blue);
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .report-meta {
-            font-size: 12px;
-            color: #999;
-            margin-top: 4px;
+        .feed-header {
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .feed-reporter {
+            font-size: 13px;
+            color: #aaa;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .feed-date {
+            font-size: 11px;
+            color: #666;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .feed-comment {
+            font-size: 15px;
+            color: #fff;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            font-weight: 400;
+        }
+
+        .feed-empty-comment {
+            font-style: italic;
+            color: #444;
+            font-size: 13px;
+        }
+
+        .feed-sector-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: rgba(0, 243, 255, 0.1);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            border-radius: 4px;
+            color: var(--primary-blue);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
         }
 
         /* --- RIGHT MAP --- */

@@ -138,18 +138,21 @@ function renderDashboard(reports) {
     listContainer.innerHTML = "";
 
     reports.forEach(r => {
-        const date = new Date(r.created_at).toLocaleString();
-        const commentSnippet = r.comments ? `<div style="font-size: 11px; color: #ccc; margin-top: 4px; font-style: italic;">"${r.comments}"</div>` : '';
+        const date = new Date(r.created_at).toLocaleDateString();
+        // Comment Logic: Show prominent or fallback
+        const commentHTML = r.comments
+            ? `<div class="feed-comment">"${r.comments}"</div>`
+            : `<div class="feed-comment feed-empty-comment">Sin comentarios...</div>`;
 
         const div = document.createElement('div');
-        div.className = 'report-item';
+        div.className = 'feed-item';
         div.innerHTML = `
-            <div class="report-sector">${r.sector || 'Desconocido'}</div>
-            <div class="report-meta">
-                <span>👤 ${r.reporter_name || 'Anónimo'}</span>
-                <span>${date}</span>
+            <div class="feed-header">
+                <span class="feed-reporter">👤 ${r.reporter_name || 'Anónimo'}</span>
+                <span class="feed-date">${date}</span>
             </div>
-            ${commentSnippet}
+            ${commentHTML}
+            <div class="feed-sector-badge">${r.sector || 'Desconocido'}</div>
         `;
         // Click to zoom
         div.onclick = () => {
