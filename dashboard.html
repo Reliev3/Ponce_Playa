@@ -213,35 +213,31 @@
         @media (max-width: 768px) {
             body {
                 flex-direction: column;
-                overflow-y: auto;
-                /* Allow body scroll */
-                height: auto;
-                /* Unset fixed height */
+                overflow: hidden;
+                /* Prevent body scroll, use internal scroll */
             }
 
             .sidebar {
                 width: 100%;
-                height: auto;
-                /* Let content define height */
+                height: 55vh;
+                /* Bottom half */
                 order: 2;
-                overflow: visible;
-                /* No internal scrollbar, use body scroll */
+                overflow-y: auto;
+                /* Internal scroll for feed */
+                border-right: none;
+                border-top: 1px solid var(--border-color);
             }
 
             .data-list-container {
-                max-height: 500px;
-                /* Optional cap, or let it grow */
                 overflow-y: visible;
+                /* Let sidebar handle scroll */
             }
 
             #map {
                 height: 45vh;
-                /* Fixed height for map */
-                min-height: 350px;
+                /* Top half, fixed/frozen */
                 width: 100%;
                 order: 1;
-                /* Prevent map from trapping scroll immediately */
-                z-index: 1;
             }
         }
     </style>
