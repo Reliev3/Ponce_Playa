@@ -354,34 +354,65 @@ function setupEventListeners() {
     }
 
     function getLatLng(e) {
+        // Standard Leaflet event with latlng already calculated
         if (e.latlng) return e.latlng;
 
-        // Manual fallback for raw touch events
-        const evt = e.originalEvent;
+        let clientX, clientY;
+        const evt = e.originalEvent || e; // Handle both Leaflet and Native events
+
+        // Extract touch/mouse client coordinates
         if (evt.touches && evt.touches.length > 0) {
-            const t = evt.touches[0];
-            return mapInstance.containerPointToLatLng([t.clientX, t.clientY]);
-        }
-        else if (evt.changedTouches && evt.changedTouches.length > 0) {
-            // Useful for touchend if needed (though we usually don't need coords there)
-            const t = evt.changedTouches[0];
-            return mapInstance.containerPointToLatLng([t.clientX, t.clientY]);
+            clientX = evt.touches[0].clientX;
+            clientY = evt.touches[0].clientY;
+        } else if (evt.changedTouches && evt.changedTouches.length > 0) {
+            clientX = evt.changedTouches[0].clientX;
+            clientY = evt.changedTouches[0].clientY;
+        } else {
+            clientX = evt.clientX;
+            clientY = evt.clientY;
         }
 
-        // Fallback for mouse
-        return mapInstance.mouseEventToLatLng(evt);
+        if (clientX === undefined) return null;
+
+        // Calculate relative to map container (Fixes offset issues)
+        const container = mapInstance.getContainer();
+        const rect = container.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+
+        return mapInstance.containerPointToLatLng([x, y]);
+    }
+
+    // -------------------------------------------------------------
+    // Global Event Handlers for Drag Capture
+    // -------------------------------------------------------------
+    function handleMove(e) {
+        // Prevent Pull-to-Refresh / Scroll
+        if (e.preventDefault) e.preventDefault();
+
+        if (!isDrawing || !tempPolyline) return;
+
+        const latlng = getLatLng(e);
+        if (latlng) {
+            currentPath.push(latlng);
+            tempPolyline.setLatLngs(currentPath);
+        }
+    }
+
+    function handleEnd(e) {
+        if (e.preventDefault) e.preventDefault();
+        stopFreehand();
     }
 
     function startFreehand(e) {
-        // Prevent default behavior (scroll/zoom) aggressively
-        if (e.originalEvent) {
-            L.DomEvent.preventDefault(e.originalEvent);
+        // Prevent default on the start event
+        if (e.originalEvent && e.originalEvent.preventDefault) {
+            e.originalEvent.preventDefault();
         }
 
         isDrawing = true;
         currentPath = [];
 
-        // Handle touch vs mouse coordinates
         const latlng = getLatLng(e);
         if (latlng) {
             currentPath.push(latlng);
@@ -391,36 +422,36 @@ function setupEventListeners() {
                 opacity: 0.8
             }).addTo(mapInstance);
         }
+
+        // Bind GLOBAL listeners to document to capture drag outside map
+        // Options: capture phase or passive:false to allow preventDefault
+        document.addEventListener('mousemove', handleMove, { passive: false });
+        document.addEventListener('touchmove', handleMove, { passive: false });
+
+        document.addEventListener('mouseup', handleEnd);
+        document.addEventListener('touchend', handleEnd);
     }
 
+    // No longer explicitly called by map event, but by global listener
+    // Kept the name for consistency references
     function moveFreehand(e) {
-        if (!isDrawing || !tempPolyline) return;
-
-        if (e.originalEvent) {
-            L.DomEvent.preventDefault(e.originalEvent);
-        }
-
-        const latlng = getLatLng(e);
-        if (latlng) {
-            currentPath.push(latlng);
-            tempPolyline.setLatLngs(currentPath);
-        }
+        handleMove(e);
     }
 
-    function stopFreehand(e) {
+    function stopFreehand() {
         if (!isDrawing) return;
+        isDrawing = false;
 
-        if (e.originalEvent) {
-            L.DomEvent.preventDefault(e.originalEvent);
-        }
-
-        isDrawing = false; // Stop capturing
+        // Unbind GLOBAL listeners
+        document.removeEventListener('mousemove', handleMove);
+        document.removeEventListener('touchmove', handleMove);
+        document.removeEventListener('mouseup', handleEnd);
+        document.removeEventListener('touchend', handleEnd);
 
         // 1. Create Polygon
-        if (currentPath && currentPath.length > 2) { // Allow triangles (3 points)
+        if (currentPath && currentPath.length >= 3) { // Minimum 3 points for a valid polygon
 
-            // Close the loop visually (push start point)
-            currentPath.push(currentPath[0]);
+            // Note: Leaflet auto-closes polygons, no need to push start point again.
 
             const polygon = L.polygon(currentPath, {
                 color: '#007AFF',
