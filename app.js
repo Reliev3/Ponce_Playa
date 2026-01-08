@@ -316,7 +316,7 @@ function setupEventListeners() {
             drawBtn.classList.add('active');
             drawBtn.innerText = "Dibujando...";
         }
-        showToast("Toca el mapa para marcar puntos. Toca el inicial para terminar.");
+        // showToast("Toca el mapa para marcar puntos. Toca el inicial para terminar.");
     });
 
     mapInstance.on('draw:drawstop', () => {
