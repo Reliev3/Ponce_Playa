@@ -287,11 +287,25 @@ select#sector-select:focus,
     transform: scale(0.96);
 }
 
+/* Map Frame Overlay */
+.map-frame {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5000;
+    pointer-events: none;
+    border: 19px solid #007AFF;
+    /* Reduced ~20% from 24px */
+    border-image: none;
+    opacity: 1.0;
+}
+
 .report-btn {
-    background: var(--text-primary);
-    /* Primary Black */
+    background: #007AFF;
     color: white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.25);
 }
 
 .report-btn:hover {
@@ -299,19 +313,19 @@ select#sector-select:focus,
 }
 
 .report-btn.active {
-    background-color: var(--primary-blue);
-    /* Blue when active (recording) */
+    background-color: var(--text-primary);
+    /* Invert for active state */
     color: white;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .delete-btn {
-    background-color: rgba(0, 0, 0, 0.05);
-    color: var(--text-primary);
+    background-color: #007AFF;
+    color: white;
 }
 
 .delete-btn:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+    opacity: 0.9;
 }
 
 /* --- Footer (Submit) --- */
@@ -336,14 +350,14 @@ select#sector-select:focus,
     max-width: 300px;
     /* Reduced width for better look */
     height: 52px;
-    background: white;
-    color: black;
+    background: #007AFF;
+    color: white;
     font-size: 17px;
     font-weight: 700;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: none;
     border-radius: 12px;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
     pointer-events: auto;
     transition: all 0.2s;
 }
