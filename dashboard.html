@@ -4,213 +4,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ponce Playa: STATUS TERMINAL</title>
+    <title>Vida Costera Dashboard</title>
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
-    <!-- Google Fonts: Retro Monospace -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
     <style>
-        :root {
-            --term-color: #00F3FF;
-            /* Glowing Cyan/Blue */
-            --term-bg: #050a0d;
-            /* Dark Blue-Black Background */
-            --term-dim: #004d52;
-            --scanline: rgba(0, 20, 25, 0.5);
-        }
-
-        html,
         body {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
-            /* Critical for Grid to fill screen */
             font-family: 'Share Tech Mono', monospace;
-            background-color: var(--term-bg);
-            color: var(--term-color);
+            background: #000;
             overflow: hidden;
-            display: grid;
-            grid-template-rows: 60px 1fr;
-            grid-template-columns: 350px 1fr;
-            grid-template-areas:
-                "header header"
-                "sidebar map";
-        }
-
-        /* --- CRT EFFECT --- */
-        body::before {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 9999;
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
-        }
-
-        /* --- HEADER --- */
-        .dashboard-header {
-            grid-area: header;
-            background: #000;
-            border-bottom: 2px solid var(--term-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            box-shadow: 0 0 15px var(--term-dim);
-            z-index: 100;
-        }
-
-        .brand {
-            font-size: 24px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 0 0 8px var(--term-color);
-        }
-
-        .status-badge {
-            border: 1px solid var(--term-color);
-            padding: 5px 10px;
-            font-size: 14px;
-            background: rgba(0, 243, 255, 0.1);
-            box-shadow: 0 0 5px var(--term-color);
-        }
-
-        /* --- SIDEBAR --- */
-        .sidebar {
-            grid-area: sidebar;
-            background: rgba(0, 0, 0, 0.9);
-            /* Opaque background to stand out */
-            border-right: 2px solid var(--term-color);
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            z-index: 50;
-        }
-
-        .stat-box {
-            border: 1px solid var(--term-color);
-            padding: 15px;
-            background: rgba(0, 20, 30, 0.5);
-            box-shadow: inset 0 0 15px rgba(0, 243, 255, 0.05);
-        }
-
-        .stat-title {
-            font-size: 14px;
-            opacity: 0.8;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-            border-bottom: 1px dashed var(--term-dim);
-            padding-bottom: 3px;
-        }
-
-        .stat-value {
-            font-size: 32px;
-            text-shadow: 0 0 10px var(--term-color);
-        }
-
-        /* --- MAP AREA --- */
-        .map-container {
-            grid-area: map;
-            position: relative;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            /* Fallback if tiles fail */
         }
 
         #map {
-            height: 100%;
-            width: 100%;
-            /* THE FALLOUT FILTER: Blue Monochrome */
-            filter: grayscale(100%) sepia(100%) hue-rotate(180deg) saturate(300%) contrast(1.2) brightness(0.8);
+            height: 100vh;
+            width: 100vw;
         }
 
-        /* --- MOBILE RESPONSIVE --- */
-        @media (max-width: 768px) {
-
-            html,
-            body {
-                overflow: auto;
-                display: block;
-            }
-
-            /* Allow scroll on mobile */
-            body {
-                grid-template-rows: auto;
-                grid-template-columns: 1fr;
-                grid-template-areas: "header" "map" "sidebar";
-            }
-
-            .map-container {
-                height: 50vh;
-                width: 100%;
-            }
-
-            /* Explicit height for mobile map */
-            .sidebar {
-                border-right: none;
-                border-top: 2px solid var(--term-color);
-            }
+        .dashboard-header {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid #00F3FF;
+            color: #00F3FF;
+            padding: 10px 30px;
+            border-radius: 4px;
+            z-index: 1000;
+            font-size: 20px;
+            letter-spacing: 2px;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+            backdrop-filter: blur(5px);
         }
     </style>
 </head>
 
 <body>
 
-    <!-- Header -->
-    <div class="dashboard-header">
-        <div class="brand">VIDA COSTERA // TERMINAL</div>
-        <div class="status-badge">SYSTEM ONLINE</div>
-    </div>
-
-    <!-- Sidebar Stats -->
-    <div class="sidebar">
-        <div class="stat-box">
-            <div class="stat-title">Total Reportes</div>
-            <div id="total-reports" class="stat-value">---</div>
-        </div>
-
-        <div class="stat-box">
-            <div class="stat-title">Sectores Activos</div>
-            <!-- Canvas container for sizing -->
-            <div style="position: relative; height: 200px; width: 100%;">
-                <canvas id="sectorChart"></canvas>
-            </div>
-        </div>
-
-        <div class="stat-box">
-            <div class="stat-title">Registro de Eventos</div>
-            <ul id="event-log" style="list-style: none; padding: 0; font-size: 12px; margin-top: 10px; opacity: 0.9;">
-                <li>> Inicializando Sistema...</li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- Map -->
-    <div class="map-container">
-        <div id="map"></div>
-    </div>
+    <div class="dashboard-header">VIDA COSTERA // DASHBOARD</div>
+    <div id="map"></div>
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Supabase JS -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
