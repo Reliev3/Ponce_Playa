@@ -1,0 +1,449 @@
+:root {
+    --primary-blue: #0A84FF;
+    --primary-gradient: linear-gradient(180deg, #0A84FF 0%, #0066CC 100%);
+    --alert-red: #FF3B30;
+    --background: #F5F5F7;
+    --surface: #FFFFFF;
+    --text-primary: #1D1D1F;
+    --text-secondary: #86868B;
+    --radius-lg: 18px;
+    --radius-md: 12px;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: 'PT Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--background);
+    color: var(--text-primary);
+    overflow: hidden;
+    /* Prevent body scroll, map handles it */
+    height: 100dvh;
+    width: 100vw;
+}
+
+/* Map takes full screen */
+#map {
+    height: 100%;
+    width: 100%;
+    z-index: 1;
+}
+
+/* Map Frame Overlay */
+.map-frame {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5000;
+    pointer-events: none;
+    border: 24px solid #007AFF;
+    border-image: none;
+    opacity: 1.0;
+}
+
+/* Glass Mask Effect (SVG Path) */
+path.glass-mask {
+    fill: rgba(0, 0, 0, 0.2) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all 0.5s ease;
+}
+
+/* --- Modal Overlay --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(245, 245, 247, 0.4);
+    background-image: url('patterns/drops.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    /* Light frosted glass */
+    /* backdrop-filter: blur(20px); */
+    /* -webkit-backdrop-filter: blur(20px); */
+    background-color: rgba(245, 245, 247, 0.9);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal-content {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 32px 24px;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 420px;
+    max-height: 85dvh;
+    overflow-y: auto;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    -webkit-overflow-scrolling: touch;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-logo {
+    max-width: 100px;
+    height: auto;
+    margin-bottom: 16px;
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content h1 {
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+}
+
+.modal-content p {
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+select#sector-select,
+.modal-input {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    font-family: inherit;
+    color: var(--text-primary);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-lg);
+    margin-bottom: 16px;
+    background-color: #F2F2F7;
+    outline: none;
+    transition: box-shadow 0.2s;
+}
+
+select#sector-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23007AFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1.2rem center;
+    background-size: 1.25em;
+}
+
+select#sector-select:focus,
+.modal-input:focus {
+    box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.15);
+}
+
+.primary-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--primary-gradient);
+    color: white;
+    font-size: 17px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    /* Apple rounded style */
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+}
+
+.primary-btn:active {
+    transform: scale(0.97);
+    box-shadow: 0 2px 6px rgba(0, 122, 255, 0.2);
+}
+
+/* --- Header --- */
+#app-header {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.85);
+    padding: 10px 24px;
+    border-radius: 99px;
+    z-index: 1000;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(12px);
+    width: auto;
+    max-width: 90%;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+#app-header h2 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+/* --- Instructional Toast --- */
+.toast {
+    position: absolute;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(30, 30, 30, 0.9);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 99px;
+    font-size: 15px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    z-index: 2000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.toast.hidden {
+    display: flex !important;
+    /* Override generic hidden for animation */
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+}
+
+.toast-icon {
+    font-size: 18px;
+}
+
+/* --- Toolbar (Drawing Tools) --- */
+.toolbar {
+    position: absolute;
+    bottom: 100px;
+    bottom: calc(100px + env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    z-index: 2000;
+    width: auto;
+    max-width: 85%;
+    /* Prevent overlap with frame */
+    padding: 6px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* --- Zoom Controls --- */
+.zoom-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 2000;
+}
+
+#zoom-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    padding: 10px 16px;
+    padding-right: 32px;
+    font-size: 15px;
+    font-family: inherit;
+    color: #007AFF;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    outline: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23007AFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.8rem center;
+    background-size: 1.25em;
+    min-width: 160px;
+}
+
+.tool-btn {
+    flex: initial;
+    padding: 0 16px;
+    height: 40px;
+    border-radius: 12px;
+    /* Apple rounded */
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: none;
+    /* Reset individual shadows */
+    white-space: nowrap;
+}
+
+.tool-btn:active {
+    transform: scale(0.96);
+}
+
+/* Map Frame Overlay */
+.map-frame {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5000;
+    pointer-events: none;
+    border: 19px solid #007AFF;
+    /* Reduced ~20% from 24px */
+    border-image: none;
+    opacity: 1.0;
+}
+
+.report-btn {
+    background: #007AFF;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.25);
+}
+
+.report-btn:hover {
+    opacity: 0.9;
+}
+
+.report-btn.active {
+    background-color: var(--text-primary);
+    /* Invert for active state */
+    color: white;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.delete-btn {
+    background-color: #007AFF;
+    color: white;
+}
+
+.delete-btn:hover {
+    opacity: 0.9;
+}
+
+/* --- Footer (Submit) --- */
+.footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 24px 20px;
+    padding-bottom: calc(40px + env(safe-area-inset-bottom));
+    background: transparent;
+    /* Floating button style instead of bar */
+    pointer-events: none;
+    /* Let clicks pass through empty areas */
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+}
+
+.submit-btn {
+    width: 100%;
+    max-width: 300px;
+    /* Reduced width for better look */
+    height: 52px;
+    background: #007AFF;
+    color: white;
+    font-size: 17px;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+    pointer-events: auto;
+    transition: all 0.2s;
+}
+
+.submit-btn:active {
+    transform: scale(0.98);
+    box-shadow: 0 4px 12px rgba(52, 199, 89, 0.25);
+}
+
+.hidden {
+    display: none !important;
+}
+
+.leaflet-control-zoom {
+    display: none;
+}
+
+/* Base mobile optimization */
+@media (max-width: 480px) {
+    .modal-content {
+        padding: 20px 16px;
+        max-height: 90dvh;
+        width: 95%;
+    }
+
+    .modal-logo {
+        max-width: 80px;
+        margin-bottom: 12px;
+    }
+
+    .modal-content h1 {
+        font-size: 20px;
+        margin-bottom: 8px;
+    }
+
+    .modal-content p {
+        font-size: 14px;
+        margin-bottom: 16px;
+    }
+
+    .modal-content h3 {
+        font-size: 14px !important;
+        margin-bottom: 4px !important;
+    }
+
+    select#sector-select,
+    .modal-input {
+        padding: 12px;
+        font-size: 15px;
+        margin-bottom: 12px;
+        height: 44px;
+    }
+
+    .primary-btn {
+        padding: 14px;
+        font-size: 16px;
+    }
+}

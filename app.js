@@ -264,7 +264,21 @@ function setupEventListeners() {
             }
 
             window.reporterName = reporterName;
-            lockAppToSector(selectedName);
+
+            // Show Instruction Overlay
+            const overlay = document.getElementById('instruction-overlay');
+            if (overlay) {
+                overlay.classList.remove('hidden');
+
+                // Wait 4 seconds then reveal map
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    lockAppToSector(selectedName);
+                }, 4000);
+            } else {
+                // Fallback if overlay missing
+                lockAppToSector(selectedName);
+            }
         });
     }
 
