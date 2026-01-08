@@ -115,11 +115,17 @@ function renderDashboard(reports) {
 
             // Popup
             const date = new Date(r.created_at).toLocaleDateString();
+            const comments = r.comments ? `<br><i>"${r.comments}"</i>` : '';
+            const contact = r.contact_info ? `<br>📞 ${r.contact_info}` : '';
+
             const content = `
-                <div style="font-family:sans-serif; color:#333;">
-                    <b>${r.sector}</b><br>
-                    Reportado por: ${r.reporter_name}<br>
-                    <small>${date}</small>
+                <div style="font-family:sans-serif; color:#333; min-width: 200px;">
+                    <b style="color: #007AFF; font-size: 1.1em;">${r.sector}</b><br>
+                    <span style="color: #555;">👤 ${r.reporter_name}</span>
+                    <hr style="margin: 5px 0; border: 0; border-top: 1px solid #eee;">
+                    ${comments}
+                    ${contact}
+                    <div style="margin-top:5px; font-size: 0.8em; color: #888;">${date}</div>
                 </div>
             `;
             layer.bindPopup(content);
@@ -133,6 +139,8 @@ function renderDashboard(reports) {
 
     reports.forEach(r => {
         const date = new Date(r.created_at).toLocaleString();
+        const commentSnippet = r.comments ? `<div style="font-size: 11px; color: #ccc; margin-top: 4px; font-style: italic;">"${r.comments}"</div>` : '';
+
         const div = document.createElement('div');
         div.className = 'report-item';
         div.innerHTML = `
@@ -141,6 +149,7 @@ function renderDashboard(reports) {
                 <span>👤 ${r.reporter_name || 'Anónimo'}</span>
                 <span>${date}</span>
             </div>
+            ${commentSnippet}
         `;
         // Click to zoom
         div.onclick = () => {
