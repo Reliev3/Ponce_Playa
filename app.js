@@ -465,8 +465,11 @@ function lockAppToSector(sectorName) {
             // Get the first polygon from the feature collection
             const boundaryFeature = PLAYA_AREA_JSON.features[0];
 
-            // Calculate difference (World - Boundary)
-            const maskPoly = turf.mask(boundaryFeature, worldMask);
+            // Buffer the boundary by 10 meters (0.01 km) so the mask starts further out
+            const bufferedBoundary = turf.buffer(boundaryFeature, 0.01, { units: 'kilometers' });
+
+            // Calculate difference (World - Buffered Boundary)
+            const maskPoly = turf.mask(bufferedBoundary, worldMask);
 
             L.geoJSON(maskPoly, {
                 style: {
