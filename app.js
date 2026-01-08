@@ -440,8 +440,8 @@ function lockAppToSector(sectorName) {
 
     const playaLayer = L.geoJSON(PLAYA_AREA_JSON, {
         style: {
-            color: '#007AFF',
-            weight: 3,
+            color: '#FF9500', // Orange
+            weight: 6,
             fill: false
         }
     }).addTo(mapInstance);
