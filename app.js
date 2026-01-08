@@ -604,3 +604,56 @@ async function loadAllPolygons() {
         });
     }
 }
+
+// --- ZOOM DROPDOWN LOGIC ---
+function loadZoomDropdown(map) {
+    const sectors = [
+        "Lirios del Sur",
+        "Los Potes",
+        "Paseo del Puerto",
+        "Puerto_Viejo",
+        "Salistral",
+        "Villa Tabaiba",
+        "pampanos",
+        "res caribe",
+        "san tomas",
+        "villa del carmen",
+        "vistas del mar"
+    ];
+
+    const zoomSelect = document.getElementById('zoom-select');
+    if (!zoomSelect) return;
+
+    // Populate Dropdown
+    sectors.forEach(sector => {
+        const option = document.createElement('option');
+        // Clean up name for display
+        const displayName = sector.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        option.value = sector;
+        option.textContent = displayName;
+        zoomSelect.appendChild(option);
+    });
+
+    // Handle Change
+    zoomSelect.addEventListener('change', async (e) => {
+        const sectorName = e.target.value;
+        if (!sectorName) return;
+
+        try {
+            const response = await fetch(`geojsons/${sectorName}.geojson`);
+            if (!response.ok) throw new Error("Failed to load geojson");
+            const data = await response.json();
+
+            // Create a temporary layer just to get bounds
+            const tempLayer = L.geoJSON(data);
+            const bounds = tempLayer.getBounds();
+
+            // Zoom to bounds (Pad it slightly)
+            map.fitBounds(bounds, { padding: [50, 50], animate: true });
+
+            console.log(`Zoomed to ${sectorName}`);
+        } catch (err) {
+            console.error("Zoom error:", err);
+        }
+    });
+}
