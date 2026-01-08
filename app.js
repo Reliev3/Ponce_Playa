@@ -79,12 +79,12 @@ const GEOJSON_DATA = {
                 "coordinates": [[[[-66.637690378504999, 17.98154472952994], [-66.637951548398959, 17.983559636216381], [-66.637516601606933, 17.983852809347614], [-66.636963785199242, 17.98395472060125], [-66.635941804162726, 17.985284251793846], [-66.632953813213248, 17.985490036456017], [-66.632953813213248, 17.985490036456017], [-66.63304931628933, 17.986705802931571], [-66.632649340461214, 17.98672873599067], [-66.632649570957838, 17.986931380100049], [-66.628696986924723, 17.987273196737014], [-66.628489082504373, 17.990740878553844], [-66.62651221170421, 17.990427659866342], [-66.626487961940597, 17.989774719303508], [-66.626887149664086, 17.989031286764543], [-66.625756111658177, 17.987568884999227], [-66.625591280845754, 17.987456470485093], [-66.625425833179207, 17.986781155504637], [-66.625401538609552, 17.986083182708271], [-66.626154504623784, 17.986104941515716], [-66.625940636243143, 17.98419129358037], [-66.628836481265807, 17.985764479693628], [-66.62909183316458, 17.98265700512172], [-66.631397721450355, 17.982699664383919], [-66.63339755438129, 17.982585003796352], [-66.634903251320409, 17.982448327410989], [-66.637067127007043, 17.981770554538457], [-66.637067127007043, 17.981770554538457], [-66.637690378504999, 17.98154472952994]]]]
             }
         },
-        { "type": "Feature", "properties": { "Name": "Los Potes" }, "geometry": null },
-        { "type": "Feature", "properties": { "Name": "Los Meros" }, "geometry": null },
+        { "type": "Feature", "properties": { "Name": "Los Potes (Amalia Marín)" }, "geometry": null },
+        { "type": "Feature", "properties": { "Name": "Los Meros (Amalia Marín)" }, "geometry": null },
         { "type": "Feature", "properties": { "Name": "Residencial Caribe" }, "geometry": null },
         { "type": "Feature", "properties": { "Name": "Villa Tabaiba" }, "geometry": null },
         { "type": "Feature", "properties": { "Name": "San Tomás" }, "geometry": null },
-        { "type": "Feature", "properties": { "Name": "Residencial Pámpanos" }, "geometry": null },
+        { "type": "Feature", "properties": { "Name": "Res. Ernesto Ramos Antonini (Pámpanos)" }, "geometry": null },
         { "type": "Feature", "properties": { "Name": "Paseo del Puerto" }, "geometry": null },
         { "type": "Feature", "properties": { "Name": "Villa del Carmen" }, "geometry": null },
         { "type": "Feature", "properties": { "Name": "Urb. Vistas del Mar" }, "geometry": null }
@@ -674,39 +674,41 @@ async function loadAllPolygons() {
 // --- ZOOM DROPDOWN LOGIC ---
 function loadZoomDropdown(map) {
     const sectors = [
-        "Lirios del Sur",
-        "Los Potes",
-        "Paseo del Puerto",
-        "Puerto_Viejo",
-        "Salistral",
-        "Villa Tabaiba",
-        "pampanos",
-        "res caribe",
-        "san tomas",
-        "villa del carmen",
-        "vistas del mar"
+        { name: "Lirios del Sur", file: "Lirios del Sur" },
+        { name: "Los Potes (Amalia Marín)", file: "Los Potes" },
+        { name: "Los Meros (Amalia Marín)", file: "amalia marin" },
+        { name: "Paseo del Puerto", file: "Paseo del Puerto" },
+        { name: "Puerto Viejo", file: "Puerto_Viejo" },
+        { name: "Salistral", file: "Salistral" },
+        { name: "Villa Tabaiba", file: "Villa Tabaiba" },
+        { name: "Res. Ernesto Ramos Antonini (Pámpanos)", file: "pampanos" },
+        { name: "Residencial Caribe", file: "res caribe" },
+        { name: "San Tomás", file: "san tomas" },
+        { name: "Villa del Carmen", file: "villa del carmen" },
+        { name: "Urb. Vistas del Mar", file: "vistas del mar" },
+        { name: "Amalia Marín", file: "amalia marin" }
     ];
 
     const zoomSelect = document.getElementById('zoom-select');
     if (!zoomSelect) return;
 
     // Populate Dropdown
+    sectors.sort((a, b) => a.name.localeCompare(b.name));
+
     sectors.forEach(sector => {
         const option = document.createElement('option');
-        // Clean up name for display
-        const displayName = sector.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        option.value = sector;
-        option.textContent = displayName;
+        option.value = sector.file; // Value is the filename
+        option.textContent = sector.name; // Display is the friendly name
         zoomSelect.appendChild(option);
     });
 
     // Handle Change
     zoomSelect.addEventListener('change', async (e) => {
-        const sectorName = e.target.value;
-        if (!sectorName) return;
+        const filename = e.target.value;
+        if (!filename) return;
 
         try {
-            const response = await fetch(`geojsons/${sectorName}.geojson`);
+            const response = await fetch(`geojsons/${filename}.geojson`);
             if (!response.ok) throw new Error("Failed to load geojson");
             const data = await response.json();
 
@@ -717,7 +719,7 @@ function loadZoomDropdown(map) {
             // Zoom to bounds (Pad it slightly)
             map.fitBounds(bounds, { padding: [50, 50], animate: true });
 
-            console.log(`Zoomed to ${sectorName}`);
+            console.log(`Zoomed to ${filename}`);
         } catch (err) {
             console.error("Zoom error:", err);
         }
