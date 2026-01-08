@@ -353,42 +353,75 @@ function setupEventListeners() {
         mapInstance.off('mouseup touchend', stopFreehand);
     }
 
+    function getLatLng(e) {
+        if (e.latlng) return e.latlng;
+
+        // Manual fallback for raw touch events
+        const evt = e.originalEvent;
+        if (evt.touches && evt.touches.length > 0) {
+            const t = evt.touches[0];
+            return mapInstance.containerPointToLatLng([t.clientX, t.clientY]);
+        }
+        else if (evt.changedTouches && evt.changedTouches.length > 0) {
+            // Useful for touchend if needed (though we usually don't need coords there)
+            const t = evt.changedTouches[0];
+            return mapInstance.containerPointToLatLng([t.clientX, t.clientY]);
+        }
+
+        // Fallback for mouse
+        return mapInstance.mouseEventToLatLng(evt);
+    }
+
     function startFreehand(e) {
+        // Prevent default behavior (scroll/zoom) aggressively
+        if (e.originalEvent) {
+            L.DomEvent.preventDefault(e.originalEvent);
+        }
+
         isDrawing = true;
         currentPath = [];
 
         // Handle touch vs mouse coordinates
-        const latlng = e.latlng || mapInstance.mouseEventToLatLng(e.originalEvent);
-        currentPath.push(latlng);
-
-        tempPolyline = L.polyline(currentPath, {
-            color: '#007AFF',
-            weight: 4,
-            opacity: 0.8
-        }).addTo(mapInstance);
+        const latlng = getLatLng(e);
+        if (latlng) {
+            currentPath.push(latlng);
+            tempPolyline = L.polyline(currentPath, {
+                color: '#007AFF',
+                weight: 4,
+                opacity: 0.8
+            }).addTo(mapInstance);
+        }
     }
 
     function moveFreehand(e) {
-        if (!isDrawing) return;
+        if (!isDrawing || !tempPolyline) return;
 
-        // Prevent scrolling on mobile
-        L.DomEvent.preventDefault(e.originalEvent);
+        if (e.originalEvent) {
+            L.DomEvent.preventDefault(e.originalEvent);
+        }
 
-        const latlng = e.latlng || mapInstance.mouseEventToLatLng(e.originalEvent);
-        currentPath.push(latlng);
-        tempPolyline.setLatLngs(currentPath);
+        const latlng = getLatLng(e);
+        if (latlng) {
+            currentPath.push(latlng);
+            tempPolyline.setLatLngs(currentPath);
+        }
     }
 
     function stopFreehand(e) {
         if (!isDrawing) return;
-        isDrawing = false;
 
-        // 1. Create Polygon from collected points
-        if (currentPath.length > 5) { // Minimum points for a shape
+        if (e.originalEvent) {
+            L.DomEvent.preventDefault(e.originalEvent);
+        }
 
-            // Simplify: Reduce points to make it clean (Supabase friendly)
-            // Using a simple skip-filter if Turf isn't fully loaded, or just keeping raw for MVP if small enough.
-            // But let's assume we want to close the loop.
+        isDrawing = false; // Stop capturing
+
+        // 1. Create Polygon
+        if (currentPath && currentPath.length > 2) { // Allow triangles (3 points)
+
+            // Close the loop visually (push start point)
+            currentPath.push(currentPath[0]);
+
             const polygon = L.polygon(currentPath, {
                 color: '#007AFF',
                 fillColor: '#007AFF',
@@ -396,7 +429,6 @@ function setupEventListeners() {
                 weight: 2
             });
 
-            // Add to the map
             drawnItems.addLayer(polygon);
         }
 
@@ -405,8 +437,9 @@ function setupEventListeners() {
             mapInstance.removeLayer(tempPolyline);
             tempPolyline = null;
         }
+        currentPath = [];
 
-        // Auto-exit drawing mode for better UX (or stay? User preference. Let's auto-exit)
+        // Auto-exit drawing mode
         disableDrawingMode();
     }
 
