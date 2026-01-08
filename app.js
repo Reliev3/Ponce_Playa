@@ -268,225 +268,252 @@ function setupEventListeners() {
                 return;
             }
 
-            window.reporterName = reporterName;
-            lockAppToSector(selectedName);
+            // Save state but don't start yet
+            window.tempReporterName = reporterName;
+            window.tempSelectedSector = selectedName;
+
+            // Show Instructions
+            document.getElementById('modal-overlay').classList.add('hidden');
+            document.getElementById('instructions-modal').classList.remove('hidden');
         });
     }
 
-    // Leaflet Draw Init
-    let polygonDrawer;
-    try {
-        if (L.Draw && L.Draw.Polygon) {
-            polygonDrawer = new L.Draw.Polygon(mapInstance, {
-                shapeOptions: {
-                    color: '#007AFF',
-                    fillColor: '#007AFF',
-                    fillOpacity: 0.6,
-                    weight: 2
-                },
-                allowIntersection: false,
-                showArea: false
-            });
-        }
-    } catch (e) {
-        console.error("Leaflet Draw error:", e);
-    }
+    // Instructions Logic
+    const instructionsContinueBtn = document.getElementById('instructions-continue-btn');
+    if (instructionsContinueBtn) {
+        instructionsContinueBtn.addEventListener('click', () => {
+            // Start App
+            window.reporterName = window.tempReporterName;
+            const sector = window.tempSelectedSector;
 
-    // Toast Logic
-    const toast = document.getElementById('instruction-toast');
-    const toastMsg = document.getElementById('toast-message');
-
-    function showToast(msg) {
-        if (toast && toastMsg) {
-            toastMsg.innerText = msg;
-            toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('show'), 10);
-        }
-    }
-
-    function hideToast() {
-        if (toast) {
-            toast.classList.remove('show');
-            setTimeout(() => toast.classList.add('hidden'), 300);
-        }
-    }
-
-    // --- CUSTOM FREEHAND DRAWING LOGIC ---
-    let isDrawing = false;
-    let currentPath = null;
-    let tempPolyline = null;
-
-    // Toggle Drawing Mode
-    if (drawBtn) {
-        drawBtn.addEventListener('click', () => {
-            // Toggle functionality
-            if (drawBtn.classList.contains('active')) {
-                disableDrawingMode();
-            } else {
-                enableDrawingMode();
-            }
+            document.getElementById('instructions-modal').classList.add('hidden');
+            lockAppToSector(sector);
         });
     }
 
-    function enableDrawingMode() {
-        if (drawBtn) {
-            drawBtn.classList.add('active');
-            drawBtn.innerHTML = '<span class="icon">✏️</span> Dibujando...';
-        }
-        mapInstance.dragging.disable(); // Important: Stop map from moving while painting
-
-        // Add container class for cursor
-        document.getElementById('map').style.cursor = 'crosshair';
-
-        // Add Touch/Mouse Events
-        mapInstance.on('mousedown touchstart', startFreehand);
-        mapInstance.on('mousemove touchmove', moveFreehand);
-        mapInstance.on('mouseup touchend', stopFreehand);
+    const instructionsBackBtn = document.getElementById('instructions-back-btn');
+    if (instructionsBackBtn) {
+        instructionsBackBtn.addEventListener('click', () => {
+            document.getElementById('instructions-modal').classList.add('hidden');
+            document.getElementById('modal-overlay').classList.remove('hidden');
+        });
     }
+}
 
-    function disableDrawingMode() {
-        if (drawBtn) {
-            drawBtn.classList.remove('active');
-            drawBtn.innerHTML = '<span class="icon">✏️</span> Marcar Área';
-        }
-        mapInstance.dragging.enable();
-        document.getElementById('map').style.cursor = '';
-
-        // Remove Events
-        mapInstance.off('mousedown touchstart', startFreehand);
-        mapInstance.off('mousemove touchmove', moveFreehand);
-        mapInstance.off('mouseup touchend', stopFreehand);
-    }
-
-    function getLatLng(e) {
-        // Standard Leaflet event with latlng already calculated
-        if (e.latlng) return e.latlng;
-
-        let clientX, clientY;
-        const evt = e.originalEvent || e; // Handle both Leaflet and Native events
-
-        // Extract touch/mouse client coordinates
-        if (evt.touches && evt.touches.length > 0) {
-            clientX = evt.touches[0].clientX;
-            clientY = evt.touches[0].clientY;
-        } else if (evt.changedTouches && evt.changedTouches.length > 0) {
-            clientX = evt.changedTouches[0].clientX;
-            clientY = evt.changedTouches[0].clientY;
-        } else {
-            clientX = evt.clientX;
-            clientY = evt.clientY;
-        }
-
-        if (clientX === undefined) return null;
-
-        // Calculate relative to map container (Fixes offset issues)
-        const container = mapInstance.getContainer();
-        const rect = container.getBoundingClientRect();
-        const x = clientX - rect.left;
-        const y = clientY - rect.top;
-
-        return mapInstance.containerPointToLatLng([x, y]);
-    }
-
-    // -------------------------------------------------------------
-    // Global Event Handlers for Drag Capture
-    // -------------------------------------------------------------
-    function handleMove(e) {
-        // Prevent Pull-to-Refresh / Scroll
-        if (e.preventDefault) e.preventDefault();
-
-        if (!isDrawing || !tempPolyline) return;
-
-        const latlng = getLatLng(e);
-        if (latlng) {
-            currentPath.push(latlng);
-            tempPolyline.setLatLngs(currentPath);
-        }
-    }
-
-    function handleEnd(e) {
-        if (e.preventDefault) e.preventDefault();
-        stopFreehand();
-    }
-
-    function startFreehand(e) {
-        // Prevent default on the start event
-        if (e.originalEvent && e.originalEvent.preventDefault) {
-            e.originalEvent.preventDefault();
-        }
-
-        isDrawing = true;
-        currentPath = [];
-
-        const latlng = getLatLng(e);
-        if (latlng) {
-            currentPath.push(latlng);
-            tempPolyline = L.polyline(currentPath, {
-                color: '#007AFF',
-                weight: 4,
-                opacity: 0.8
-            }).addTo(mapInstance);
-        }
-
-        // Bind GLOBAL listeners to document to capture drag outside map
-        // Options: capture phase or passive:false to allow preventDefault
-        document.addEventListener('mousemove', handleMove, { passive: false });
-        document.addEventListener('touchmove', handleMove, { passive: false });
-
-        document.addEventListener('mouseup', handleEnd);
-        document.addEventListener('touchend', handleEnd);
-    }
-
-    // No longer explicitly called by map event, but by global listener
-    // Kept the name for consistency references
-    function moveFreehand(e) {
-        handleMove(e);
-    }
-
-    function stopFreehand() {
-        if (!isDrawing) return;
-        isDrawing = false;
-
-        // Unbind GLOBAL listeners
-        document.removeEventListener('mousemove', handleMove);
-        document.removeEventListener('touchmove', handleMove);
-        document.removeEventListener('mouseup', handleEnd);
-        document.removeEventListener('touchend', handleEnd);
-
-        // 1. Create Polygon
-        if (currentPath && currentPath.length >= 3) { // Minimum 3 points for a valid polygon
-
-            // Note: Leaflet auto-closes polygons, no need to push start point again.
-
-            const polygon = L.polygon(currentPath, {
+// Leaflet Draw Init
+let polygonDrawer;
+try {
+    if (L.Draw && L.Draw.Polygon) {
+        polygonDrawer = new L.Draw.Polygon(mapInstance, {
+            shapeOptions: {
                 color: '#007AFF',
                 fillColor: '#007AFF',
                 fillOpacity: 0.6,
                 weight: 2
-            });
-
-            drawnItems.addLayer(polygon);
-        }
-
-        // Cleanup temp line
-        if (tempPolyline) {
-            mapInstance.removeLayer(tempPolyline);
-            tempPolyline = null;
-        }
-        currentPath = [];
-
-        // Auto-exit drawing mode
-        disableDrawingMode();
-    }
-
-    if (deleteBtn) {
-        deleteBtn.addEventListener('click', () => {
-            const layers = drawnItems.getLayers();
-            if (layers.length > 0) {
-                drawnItems.removeLayer(layers[layers.length - 1]);
-            }
+            },
+            allowIntersection: false,
+            showArea: false
         });
     }
+} catch (e) {
+    console.error("Leaflet Draw error:", e);
+}
+
+// Toast Logic
+const toast = document.getElementById('instruction-toast');
+const toastMsg = document.getElementById('toast-message');
+
+function showToast(msg) {
+    if (toast && toastMsg) {
+        toastMsg.innerText = msg;
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('show'), 10);
+    }
+}
+
+function hideToast() {
+    if (toast) {
+        toast.classList.remove('show');
+        setTimeout(() => toast.classList.add('hidden'), 300);
+    }
+}
+
+// --- CUSTOM FREEHAND DRAWING LOGIC ---
+let isDrawing = false;
+let currentPath = null;
+let tempPolyline = null;
+
+// Toggle Drawing Mode
+if (drawBtn) {
+    drawBtn.addEventListener('click', () => {
+        // Toggle functionality
+        if (drawBtn.classList.contains('active')) {
+            disableDrawingMode();
+        } else {
+            enableDrawingMode();
+        }
+    });
+}
+
+function enableDrawingMode() {
+    if (drawBtn) {
+        drawBtn.classList.add('active');
+        drawBtn.innerHTML = '<span class="icon">✏️</span> Dibujando...';
+    }
+    mapInstance.dragging.disable(); // Important: Stop map from moving while painting
+
+    // Add container class for cursor
+    document.getElementById('map').style.cursor = 'crosshair';
+
+    // Add Touch/Mouse Events
+    mapInstance.on('mousedown touchstart', startFreehand);
+    mapInstance.on('mousemove touchmove', moveFreehand);
+    mapInstance.on('mouseup touchend', stopFreehand);
+}
+
+function disableDrawingMode() {
+    if (drawBtn) {
+        drawBtn.classList.remove('active');
+        drawBtn.innerHTML = '<span class="icon">✏️</span> Marcar Área';
+    }
+    mapInstance.dragging.enable();
+    document.getElementById('map').style.cursor = '';
+
+    // Remove Events
+    mapInstance.off('mousedown touchstart', startFreehand);
+    mapInstance.off('mousemove touchmove', moveFreehand);
+    mapInstance.off('mouseup touchend', stopFreehand);
+}
+
+function getLatLng(e) {
+    // Standard Leaflet event with latlng already calculated
+    if (e.latlng) return e.latlng;
+
+    let clientX, clientY;
+    const evt = e.originalEvent || e; // Handle both Leaflet and Native events
+
+    // Extract touch/mouse client coordinates
+    if (evt.touches && evt.touches.length > 0) {
+        clientX = evt.touches[0].clientX;
+        clientY = evt.touches[0].clientY;
+    } else if (evt.changedTouches && evt.changedTouches.length > 0) {
+        clientX = evt.changedTouches[0].clientX;
+        clientY = evt.changedTouches[0].clientY;
+    } else {
+        clientX = evt.clientX;
+        clientY = evt.clientY;
+    }
+
+    if (clientX === undefined) return null;
+
+    // Calculate relative to map container (Fixes offset issues)
+    const container = mapInstance.getContainer();
+    const rect = container.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    return mapInstance.containerPointToLatLng([x, y]);
+}
+
+// -------------------------------------------------------------
+// Global Event Handlers for Drag Capture
+// -------------------------------------------------------------
+function handleMove(e) {
+    // Prevent Pull-to-Refresh / Scroll
+    if (e.preventDefault) e.preventDefault();
+
+    if (!isDrawing || !tempPolyline) return;
+
+    const latlng = getLatLng(e);
+    if (latlng) {
+        currentPath.push(latlng);
+        tempPolyline.setLatLngs(currentPath);
+    }
+}
+
+function handleEnd(e) {
+    if (e.preventDefault) e.preventDefault();
+    stopFreehand();
+}
+
+function startFreehand(e) {
+    // Prevent default on the start event
+    if (e.originalEvent && e.originalEvent.preventDefault) {
+        e.originalEvent.preventDefault();
+    }
+
+    isDrawing = true;
+    currentPath = [];
+
+    const latlng = getLatLng(e);
+    if (latlng) {
+        currentPath.push(latlng);
+        tempPolyline = L.polyline(currentPath, {
+            color: '#007AFF',
+            weight: 4,
+            opacity: 0.8
+        }).addTo(mapInstance);
+    }
+
+    // Bind GLOBAL listeners to document to capture drag outside map
+    // Options: capture phase or passive:false to allow preventDefault
+    document.addEventListener('mousemove', handleMove, { passive: false });
+    document.addEventListener('touchmove', handleMove, { passive: false });
+
+    document.addEventListener('mouseup', handleEnd);
+    document.addEventListener('touchend', handleEnd);
+}
+
+// No longer explicitly called by map event, but by global listener
+// Kept the name for consistency references
+function moveFreehand(e) {
+    handleMove(e);
+}
+
+function stopFreehand() {
+    if (!isDrawing) return;
+    isDrawing = false;
+
+    // Unbind GLOBAL listeners
+    document.removeEventListener('mousemove', handleMove);
+    document.removeEventListener('touchmove', handleMove);
+    document.removeEventListener('mouseup', handleEnd);
+    document.removeEventListener('touchend', handleEnd);
+
+    // 1. Create Polygon
+    if (currentPath && currentPath.length >= 3) { // Minimum 3 points for a valid polygon
+
+        // Note: Leaflet auto-closes polygons, no need to push start point again.
+
+        const polygon = L.polygon(currentPath, {
+            color: '#007AFF',
+            fillColor: '#007AFF',
+            fillOpacity: 0.6,
+            weight: 2
+        });
+
+        drawnItems.addLayer(polygon);
+    }
+
+    // Cleanup temp line
+    if (tempPolyline) {
+        mapInstance.removeLayer(tempPolyline);
+        tempPolyline = null;
+    }
+    currentPath = [];
+
+    // Auto-exit drawing mode
+    disableDrawingMode();
+}
+
+if (deleteBtn) {
+    deleteBtn.addEventListener('click', () => {
+        const layers = drawnItems.getLayers();
+        if (layers.length > 0) {
+            drawnItems.removeLayer(layers[layers.length - 1]);
+        }
+    });
+}
 
 
 }
