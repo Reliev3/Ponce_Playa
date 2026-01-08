@@ -600,6 +600,8 @@ async function submitReport() {
                 {
                     sector: window.currSectorName,
                     reporter_name: window.reporterName,
+                    comments: comments,       // Added
+                    contact_info: contact,    // Added
                     geojson_data: geoJsonPayload
                 }
             ]);
