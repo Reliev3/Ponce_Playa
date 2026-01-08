@@ -17,22 +17,25 @@
 
     <style>
         :root {
-            --term-green: #14F24A;
-            /* Classic Green */
-            --term-bg: #0D110E;
-            /* Dark Background */
-            --term-dim: #0a4f1d;
-            --scanline: rgba(18, 16, 16, 0.5);
+            --term-color: #00F3FF;
+            /* Glowing Cyan/Blue */
+            --term-bg: #050a0d;
+            /* Dark Blue-Black Background */
+            --term-dim: #004d52;
+            --scanline: rgba(0, 20, 25, 0.5);
         }
 
+        html,
         body {
             margin: 0;
             padding: 0;
+            width: 100%;
+            height: 100%;
+            /* Critical for Grid to fill screen */
             font-family: 'Share Tech Mono', monospace;
             background-color: var(--term-bg);
-            color: var(--term-green);
+            color: var(--term-color);
             overflow: hidden;
-            height: 100vh;
             display: grid;
             grid-template-rows: 60px 1fr;
             grid-template-columns: 350px 1fr;
@@ -60,12 +63,12 @@
         .dashboard-header {
             grid-area: header;
             background: #000;
-            border-bottom: 2px solid var(--term-green);
+            border-bottom: 2px solid var(--term-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 20px;
-            box-shadow: 0 0 10px var(--term-dim);
+            box-shadow: 0 0 15px var(--term-dim);
             z-index: 100;
         }
 
@@ -73,33 +76,36 @@
             font-size: 24px;
             text-transform: uppercase;
             letter-spacing: 2px;
-            text-shadow: 0 0 5px var(--term-green);
+            text-shadow: 0 0 8px var(--term-color);
         }
 
         .status-badge {
-            border: 1px solid var(--term-green);
+            border: 1px solid var(--term-color);
             padding: 5px 10px;
             font-size: 14px;
-            background: rgba(20, 242, 74, 0.1);
+            background: rgba(0, 243, 255, 0.1);
+            box-shadow: 0 0 5px var(--term-color);
         }
 
         /* --- SIDEBAR --- */
         .sidebar {
             grid-area: sidebar;
-            background: #000;
-            border-right: 2px solid var(--term-green);
+            background: rgba(0, 0, 0, 0.9);
+            /* Opaque background to stand out */
+            border-right: 2px solid var(--term-color);
             padding: 20px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 20px;
+            z-index: 50;
         }
 
         .stat-box {
-            border: 1px solid var(--term-green);
+            border: 1px solid var(--term-color);
             padding: 15px;
-            background: rgba(0, 0, 0, 0.5);
-            box-shadow: inset 0 0 10px rgba(20, 242, 74, 0.1);
+            background: rgba(0, 20, 30, 0.5);
+            box-shadow: inset 0 0 15px rgba(0, 243, 255, 0.05);
         }
 
         .stat-title {
@@ -113,36 +119,51 @@
 
         .stat-value {
             font-size: 32px;
-            text-shadow: 0 0 8px var(--term-green);
+            text-shadow: 0 0 10px var(--term-color);
         }
 
         /* --- MAP AREA --- */
         .map-container {
             grid-area: map;
             position: relative;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            /* Fallback if tiles fail */
         }
 
         #map {
             height: 100%;
             width: 100%;
-            /* THE FALLOUT FILTER: Green Monochrome */
-            filter: grayscale(100%) sepia(100%) hue-rotate(90deg) saturate(300%) contrast(1.2);
+            /* THE FALLOUT FILTER: Blue Monochrome */
+            filter: grayscale(100%) sepia(100%) hue-rotate(180deg) saturate(300%) contrast(1.2) brightness(0.8);
         }
 
         /* --- MOBILE RESPONSIVE --- */
         @media (max-width: 768px) {
+
+            html,
             body {
-                grid-template-rows: 60px 1fr 1fr;
-                grid-template-columns: 1fr;
-                grid-template-areas:
-                    "header"
-                    "map"
-                    "sidebar";
+                overflow: auto;
+                display: block;
             }
 
+            /* Allow scroll on mobile */
+            body {
+                grid-template-rows: auto;
+                grid-template-columns: 1fr;
+                grid-template-areas: "header" "map" "sidebar";
+            }
+
+            .map-container {
+                height: 50vh;
+                width: 100%;
+            }
+
+            /* Explicit height for mobile map */
             .sidebar {
                 border-right: none;
-                border-top: 2px solid var(--term-green);
+                border-top: 2px solid var(--term-color);
             }
         }
     </style>
@@ -153,7 +174,7 @@
     <!-- Header -->
     <div class="dashboard-header">
         <div class="brand">VIDA COSTERA // TERMINAL</div>
-        <div class="status-badge">ONLINE</div>
+        <div class="status-badge">SYSTEM ONLINE</div>
     </div>
 
     <!-- Sidebar Stats -->
@@ -165,13 +186,16 @@
 
         <div class="stat-box">
             <div class="stat-title">Sectores Activos</div>
-            <div class="stat-value"><canvas id="sectorChart"></canvas></div>
+            <!-- Canvas container for sizing -->
+            <div style="position: relative; height: 200px; width: 100%;">
+                <canvas id="sectorChart"></canvas>
+            </div>
         </div>
 
         <div class="stat-box">
             <div class="stat-title">Registro de Eventos</div>
             <ul id="event-log" style="list-style: none; padding: 0; font-size: 12px; margin-top: 10px; opacity: 0.9;">
-                <li>> Inicializando...</li>
+                <li>> Inicializando Sistema...</li>
             </ul>
         </div>
     </div>
