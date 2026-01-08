@@ -85,38 +85,16 @@ async function initDashboard() {
 
     allReports = data || [];
 
-    // B. Populate Filters
-    populateFilters();
+    // B. Populate Filters (Removed)
 
     // C. Initial Render
     renderDashboard(allReports);
 
-    // D. Setup Event Listeners
-    document.getElementById('filter-sector').addEventListener('change', runFilters);
+    // D. Setup Event Listeners (Removed)
 }
 
-function populateFilters() {
-    const sectorSet = new Set();
-    allReports.forEach(r => {
-        if (r.sector) sectorSet.add(r.sector);
-    });
+// Filters removed per user request
 
-    const sectorSelect = document.getElementById('filter-sector');
-    sectorSet.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s;
-        opt.innerText = s;
-        sectorSelect.appendChild(opt);
-    });
-}
-
-function runFilters() {
-    const sector = document.getElementById('filter-sector').value;
-    const filtered = allReports.filter(r => {
-        return (sector === 'all') || (r.sector === sector);
-    });
-    renderDashboard(filtered);
-}
 
 let chartInstance = null;
 
