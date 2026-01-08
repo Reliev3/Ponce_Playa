@@ -102,10 +102,6 @@ function renderDashboard(reports) {
     // 1. Update Scorecards
     document.getElementById('total-reports').innerText = reports.length;
 
-    // Unique Participants
-    const participants = new Set(reports.map(r => r.reporter_name).filter(n => n)).size;
-    document.getElementById('total-participants').innerText = participants;
-
 
     // 2. Update Map
     mapLayerGroup.clearLayers();
@@ -171,8 +167,10 @@ function renderDashboard(reports) {
 
     // 4. Render/Update Charts
     renderChart(reports);       // Trend
-    renderSectorChart(reports); // Sectors
 }
+
+// ... trend chart logic ...
+
 
 function renderChart(reports) {
     const ctx = document.getElementById('trend-chart');
@@ -236,69 +234,3 @@ function renderChart(reports) {
 
 // Start
 initDashboard();
-
-// --- BAR CHART (SECTORS) ---
-let sectorChartInstance = null;
-
-function renderSectorChart(reports) {
-    const ctx = document.getElementById('sector-chart');
-    if (!ctx) return;
-
-    // Aggregate by Sector
-    const counts = {};
-    reports.forEach(r => {
-        const sector = r.sector || 'Desconocido';
-        counts[sector] = (counts[sector] || 0) + 1;
-    });
-
-    // Sort by Count (Desc)
-    const labels = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
-    const data = labels.map(l => counts[l]);
-
-    if (sectorChartInstance) {
-        sectorChartInstance.destroy();
-    }
-
-    sectorChartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Reportes por Comunidad',
-                data: data,
-                backgroundColor: 'rgba(0, 243, 255, 0.2)',
-                borderColor: '#00F3FF',
-                borderWidth: 1,
-                barThickness: 10,
-                borderRadius: 4
-            }]
-        },
-        options: {
-            indexAxis: 'y', // Horizontal Bar
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: 'rgba(0,0,0,0.9)',
-                    titleColor: '#fff',
-                    bodyColor: '#fff'
-                }
-            },
-            scales: {
-                x: {
-                    display: false, // Hide X Axis numbers for cleaner look
-                    grid: { display: false }
-                },
-                y: {
-                    ticks: {
-                        color: '#aaa',
-                        font: { size: 10 },
-                        autoSkip: false // Show all sector names
-                    },
-                    grid: { display: false } // Clean look
-                }
-            }
-        }
-    });
-}
