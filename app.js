@@ -291,13 +291,7 @@ function setupEventListeners() {
         });
     }
 
-    const instructionsBackBtn = document.getElementById('instructions-back-btn');
-    if (instructionsBackBtn) {
-        instructionsBackBtn.addEventListener('click', () => {
-            document.getElementById('instructions-modal').classList.add('hidden');
-            document.getElementById('modal-overlay').classList.remove('hidden');
-        });
-    }
+
 
     // Leaflet Draw Init
     let polygonDrawer;
