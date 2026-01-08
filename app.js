@@ -81,7 +81,7 @@ const GEOJSON_DATA = {
         },
         { "type": "Feature", "properties": { "Name": "Los Potes" }, "geometry": null },
         { "type": "Feature", "properties": { "Name": "Los Meros" }, "geometry": null },
-        { "type": "Feature", "properties": { "Name": "BDA Caribe" }, "geometry": null },
+        { "type": "Feature", "properties": { "Name": "Residencial Caribe" }, "geometry": null },
         { "type": "Feature", "properties": { "Name": "Villa Tabaiba" }, "geometry": null },
         { "type": "Feature", "properties": { "Name": "San Tomás" }, "geometry": null },
         { "type": "Feature", "properties": { "Name": "Residencial Pámpanos" }, "geometry": null },
