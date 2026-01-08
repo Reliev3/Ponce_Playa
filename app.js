@@ -140,9 +140,14 @@ function init() {
             maxZoom: 19
         }).addTo(mapInstance);
 
-        // Overlay: Labels (Streets & Places)
+        // Overlay: Labels (Streets & Places) - ON TOP
+        mapInstance.createPane('labels');
+        mapInstance.getPane('labels').style.zIndex = 650; // Above overlays (400) and shadows (500)
+        mapInstance.getPane('labels').style.pointerEvents = 'none'; // Let clicks pass through
+
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 19
+            maxZoom: 19,
+            pane: 'labels'
         }).addTo(mapInstance);
 
 

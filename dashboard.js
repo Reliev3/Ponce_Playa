@@ -17,6 +17,17 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/
     maxZoom: 19
 }).addTo(map);
 
+// Create labels pane for better visibility
+map.createPane('labels');
+map.getPane('labels').style.zIndex = 650;
+map.getPane('labels').style.pointerEvents = 'none';
+
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Esri',
+    maxZoom: 19,
+    pane: 'labels'
+}).addTo(map);
+
 mapLayerGroup.addTo(map);
 
 // 2. Load Boundary
