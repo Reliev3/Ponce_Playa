@@ -13,6 +13,16 @@
     <!-- Leaflet Draw CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
 
+    <!-- FreeDraw CSS (Custom minimal styles if needed, mostly handled by JS) -->
+    <style>
+        .leaflet-freedraw-polygon {
+            stroke: #007AFF;
+            stroke-width: 3;
+            fill: #007AFF;
+            fill-opacity: 0.5;
+        }
+    </style>
+
     <!-- Google Fonts: PT Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -105,6 +115,13 @@
 
     <!-- Leaflet Draw JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+
+    <!-- Turf.js (For geometry simplification) -->
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
+    <!-- Leaflet.FreeDraw with Dependencies -->
+    <!-- Note: FreeDraw v2 requires specific setup, using a contained implementation for stability -->
+    <script src="geojsons/leaflet-freedraw.web.js"></script>
 
 
     <!-- Supabase JS -->

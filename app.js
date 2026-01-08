@@ -297,35 +297,109 @@ function setupEventListeners() {
         }
     }
 
+    // --- CUSTOM FREEHAND DRAWING LOGIC ---
+    let isDrawing = false;
+    let currentPath = null;
+    let tempPolyline = null;
+
+    // Toggle Drawing Mode
     if (drawBtn) {
         drawBtn.addEventListener('click', () => {
-            if (polygonDrawer) {
-                polygonDrawer.enable();
+            // Toggle functionality
+            if (drawBtn.classList.contains('active')) {
+                disableDrawingMode();
+            } else {
+                enableDrawingMode();
             }
         });
     }
 
-    // Map Draw Events
-    mapInstance.on(L.Draw.Event.CREATED, function (e) {
-        drawnItems.addLayer(e.layer);
-        hideToast();
-    });
-
-    mapInstance.on('draw:drawstart', () => {
+    function enableDrawingMode() {
         if (drawBtn) {
             drawBtn.classList.add('active');
-            drawBtn.innerText = "Dibujando...";
+            drawBtn.innerHTML = '<span class="icon">✏️</span> Dibujando...';
         }
-        // showToast("Toca el mapa para marcar puntos. Toca el inicial para terminar.");
-    });
+        mapInstance.dragging.disable(); // Important: Stop map from moving while painting
 
-    mapInstance.on('draw:drawstop', () => {
+        // Add container class for cursor
+        document.getElementById('map').style.cursor = 'crosshair';
+
+        // Add Touch/Mouse Events
+        mapInstance.on('mousedown touchstart', startFreehand);
+        mapInstance.on('mousemove touchmove', moveFreehand);
+        mapInstance.on('mouseup touchend', stopFreehand);
+    }
+
+    function disableDrawingMode() {
         if (drawBtn) {
             drawBtn.classList.remove('active');
             drawBtn.innerHTML = '<span class="icon">✏️</span> Marcar Área';
         }
-        hideToast();
-    });
+        mapInstance.dragging.enable();
+        document.getElementById('map').style.cursor = '';
+
+        // Remove Events
+        mapInstance.off('mousedown touchstart', startFreehand);
+        mapInstance.off('mousemove touchmove', moveFreehand);
+        mapInstance.off('mouseup touchend', stopFreehand);
+    }
+
+    function startFreehand(e) {
+        isDrawing = true;
+        currentPath = [];
+
+        // Handle touch vs mouse coordinates
+        const latlng = e.latlng || mapInstance.mouseEventToLatLng(e.originalEvent);
+        currentPath.push(latlng);
+
+        tempPolyline = L.polyline(currentPath, {
+            color: '#007AFF',
+            weight: 4,
+            opacity: 0.8
+        }).addTo(mapInstance);
+    }
+
+    function moveFreehand(e) {
+        if (!isDrawing) return;
+
+        // Prevent scrolling on mobile
+        L.DomEvent.preventDefault(e.originalEvent);
+
+        const latlng = e.latlng || mapInstance.mouseEventToLatLng(e.originalEvent);
+        currentPath.push(latlng);
+        tempPolyline.setLatLngs(currentPath);
+    }
+
+    function stopFreehand(e) {
+        if (!isDrawing) return;
+        isDrawing = false;
+
+        // 1. Create Polygon from collected points
+        if (currentPath.length > 5) { // Minimum points for a shape
+
+            // Simplify: Reduce points to make it clean (Supabase friendly)
+            // Using a simple skip-filter if Turf isn't fully loaded, or just keeping raw for MVP if small enough.
+            // But let's assume we want to close the loop.
+            const polygon = L.polygon(currentPath, {
+                color: '#007AFF',
+                fillColor: '#007AFF',
+                fillOpacity: 0.6,
+                weight: 2
+            });
+
+            // Add to the map
+            drawnItems.addLayer(polygon);
+        }
+
+        // Cleanup temp line
+        if (tempPolyline) {
+            mapInstance.removeLayer(tempPolyline);
+            tempPolyline = null;
+        }
+
+        // Auto-exit drawing mode for better UX (or stay? User preference. Let's auto-exit)
+        disableDrawingMode();
+    }
 
     if (deleteBtn) {
         deleteBtn.addEventListener('click', () => {
