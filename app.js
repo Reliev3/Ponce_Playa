@@ -158,6 +158,9 @@ function init() {
 
         // 5. Setup Listeners
         setupEventListeners();
+
+        // 6. Init Zoom Dropdown
+        loadZoomDropdown(mapInstance);
         console.log("AG_LOG: Init finished");
     } catch (e) {
         console.error("AG_LOG: Error in init:", e);
