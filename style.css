@@ -81,15 +81,18 @@ path.glass-mask {
 }
 
 .modal-content {
-    background: rgba(255, 255, 255, 0.85);
-    padding: 40px 32px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 32px 24px;
     border-radius: 24px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-    width: 100%;
+    width: 90%;
     max-width: 420px;
+    max-height: 85dvh;
+    overflow-y: auto;
     text-align: center;
     border: 1px solid rgba(255, 255, 255, 0.5);
     animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    -webkit-overflow-scrolling: touch;
 }
 
 @keyframes slideUp {
@@ -105,38 +108,39 @@ path.glass-mask {
 }
 
 .modal-logo {
-    max-width: 120px;
+    max-width: 100px;
     height: auto;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     border-radius: var(--radius-md);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .modal-content h1 {
-    font-size: 32px;
-    font-weight: 700;
-    margin-bottom: 16px;
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 12px;
     color: var(--text-primary);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
 }
 
 .modal-content p {
     color: var(--text-secondary);
-    margin-bottom: 32px;
-    font-size: 17px;
-    line-height: 1.5;
+    margin-bottom: 24px;
+    font-size: 15px;
+    line-height: 1.4;
 }
 
 select#sector-select,
 .modal-input {
     width: 100%;
-    padding: 16px;
-    font-size: 17px;
+    padding: 14px;
+    font-size: 16px;
     font-family: inherit;
     color: var(--text-primary);
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: var(--radius-lg);
-    margin-bottom: 24px;
+    margin-bottom: 16px;
     background-color: #F2F2F7;
     outline: none;
     transition: box-shadow 0.2s;
