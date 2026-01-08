@@ -30,12 +30,43 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/Worl
 
 mapLayerGroup.addTo(map);
 
-// 2. Load Boundary
+// 2. Load Boundary & Mask
 fetch('geojsons/Playa_Area.geojson').then(r => r.json()).then(data => {
+    // A. Add Orange Boundary
     L.geoJSON(data, {
-        style: { color: '#00F3FF', weight: 2, fill: false, dashArray: '5, 5', opacity: 0.6 },
+        style: {
+            color: '#FF9500',
+            weight: 5,
+            fill: false,
+            opacity: 1
+        },
         interactive: false
     }).addTo(map);
+
+    // B. Add Inverted Focus Mask
+    try {
+        if (typeof turf !== 'undefined') {
+            const worldMask = turf.polygon([[
+                [-180, -90], [180, -90], [180, 90], [-180, 90], [-180, -90]
+            ]]);
+            const boundaryFeature = data.features[0];
+            const bufferedBoundary = turf.buffer(boundaryFeature, 0.01, { units: 'kilometers' });
+            const maskPoly = turf.mask(bufferedBoundary, worldMask);
+
+            L.geoJSON(maskPoly, {
+                style: {
+                    color: 'transparent',
+                    fillColor: '#000000',
+                    fillOpacity: 0.7, // Dark dim
+                    weight: 0,
+                    interactive: false
+                }
+            }).addTo(map);
+        }
+    } catch (e) {
+        console.error("Mask Error:", e);
+    }
+
 }).catch(e => console.error(e));
 
 // 3. Main Init
@@ -62,54 +93,36 @@ async function initDashboard() {
 
     // D. Setup Event Listeners
     document.getElementById('filter-sector').addEventListener('change', runFilters);
-    document.getElementById('filter-reporter').addEventListener('change', runFilters);
 }
 
 function populateFilters() {
     const sectorSet = new Set();
-    const reporterSet = new Set();
-
     allReports.forEach(r => {
         if (r.sector) sectorSet.add(r.sector);
-        if (r.reporter_name) reporterSet.add(r.reporter_name);
     });
 
     const sectorSelect = document.getElementById('filter-sector');
-    const reporterSelect = document.getElementById('filter-reporter');
-
     sectorSet.forEach(s => {
         const opt = document.createElement('option');
         opt.value = s;
         opt.innerText = s;
         sectorSelect.appendChild(opt);
     });
-
-    reporterSet.forEach(r => {
-        const opt = document.createElement('option');
-        opt.value = r;
-        opt.innerText = r;
-        reporterSelect.appendChild(opt);
-    });
 }
 
 function runFilters() {
     const sector = document.getElementById('filter-sector').value;
-    const reporter = document.getElementById('filter-reporter').value;
-
     const filtered = allReports.filter(r => {
-        const matchSector = (sector === 'all') || (r.sector === sector);
-        const matchReporter = (reporter === 'all') || (r.reporter_name === reporter);
-        return matchSector && matchReporter;
+        return (sector === 'all') || (r.sector === sector);
     });
-
     renderDashboard(filtered);
 }
+
+let chartInstance = null;
 
 function renderDashboard(reports) {
     // 1. Update Scorecards
     document.getElementById('total-reports').innerText = reports.length;
-    const uniqueSectors = new Set(reports.map(r => r.sector)).size;
-    document.getElementById('active-sectors').innerText = uniqueSectors;
 
     // 2. Update Map
     mapLayerGroup.clearLayers();
@@ -144,13 +157,12 @@ function renderDashboard(reports) {
         }
     });
 
-    // 3. Update List
+    // 3. Update Feed List
     const listContainer = document.getElementById('report-list');
     listContainer.innerHTML = "";
 
     reports.forEach(r => {
         const date = new Date(r.created_at).toLocaleDateString();
-        // Comment Logic: Show prominent or fallback
         const commentHTML = r.comments
             ? `<div class="feed-comment">"${r.comments}"</div>`
             : `<div class="feed-comment feed-empty-comment">Sin comentarios...</div>`;
@@ -165,7 +177,6 @@ function renderDashboard(reports) {
             ${commentHTML}
             <div class="feed-sector-badge">${r.sector || 'Desconocido'}</div>
         `;
-        // Click to zoom
         div.onclick = () => {
             if (r.geojson_data) {
                 const l = L.geoJSON(r.geojson_data);
@@ -173,6 +184,68 @@ function renderDashboard(reports) {
             }
         };
         listContainer.appendChild(div);
+    });
+
+    // 4. Render/Update Chart
+    renderChart(reports);
+}
+
+function renderChart(reports) {
+    const ctx = document.getElementById('trend-chart');
+    if (!ctx) return;
+
+    // Aggregate by Date
+    const counts = {};
+    reports.forEach(r => {
+        const date = new Date(r.created_at).toLocaleDateString(); // Simple aggregation
+        counts[date] = (counts[date] || 0) + 1;
+    });
+
+    // Sort Dates
+    const labels = Object.keys(counts).sort((a, b) => new Date(a) - new Date(b));
+    const data = labels.map(l => counts[l]);
+
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+
+    // Custom Chart Theme
+    Chart.defaults.color = '#888';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.1)';
+
+    chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Reportes',
+                data: data,
+                borderColor: '#00F3FF',
+                backgroundColor: 'rgba(0, 243, 255, 0.1)',
+                borderWidth: 2,
+                pointRadius: 3,
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff'
+                }
+            },
+            scales: {
+                x: { ticks: { font: { size: 10 } } },
+                y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } }
+            }
+        }
     });
 }
 

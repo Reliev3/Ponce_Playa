@@ -240,13 +240,9 @@
 
         <!-- SCORECARDS -->
         <div class="scorecards">
-            <div class="card">
+            <div class="card" style="grid-column: span 2;">
                 <div id="total-reports" class="card-value">--</div>
                 <div class="card-label">Total Reportes</div>
-            </div>
-            <div class="card">
-                <div id="active-sectors" class="card-value">--</div>
-                <div class="card-label">Sectores Activos</div>
             </div>
         </div>
 
@@ -255,9 +251,11 @@
             <select id="filter-sector">
                 <option value="all">Todos los Sectores</option>
             </select>
-            <select id="filter-reporter">
-                <option value="all">Todos los Reportadores</option>
-            </select>
+        </div>
+
+        <!-- TREND CHART -->
+        <div style="padding: 0 20px 20px 20px; height: 150px;">
+            <canvas id="trend-chart"></canvas>
         </div>
 
         <!-- DATA LIST -->
@@ -273,6 +271,12 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Turf.js (For Mask) -->
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Supabase JS -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
