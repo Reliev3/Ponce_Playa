@@ -28,7 +28,31 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/Worl
     maxZoom: 19
 }).addTo(map);
 
-// 3. Fetch and Render Data
+// 3. Load Ponce Playa Boundary
+async function loadBoundary() {
+    try {
+        const response = await fetch('geojsons/Playa_Area.geojson');
+        const data = await response.json();
+
+        L.geoJSON(data, {
+            style: {
+                color: '#FF9500', // Orange/Yellow boundary
+                weight: 4,
+                fill: false,
+                dashArray: '10, 10'
+            },
+            interactive: false
+        }).addTo(map);
+
+        // Move to start view
+        // map.fitBounds(L.geoJSON(data).getBounds()); // Optional: force view? Let's stick to default for now or fit.
+    } catch (e) {
+        console.error("Error loading boundary:", e);
+    }
+}
+loadBoundary();
+
+// 4. Fetch and Render Data
 async function loadReports() {
     console.log("Fetching reports...");
     const { data, error } = await supabaseClient
